@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agustín Winkler — Motion & Video</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Barlow+Condensed:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #050507;
+    --red: #E8132A;
+    --red-dark: #9A0A1A;
+    --red-glow: rgba(232,19,42,0.35);
+    --cyan: #00F5FF;
+    --yellow: #FFE600;
+    --white: #F0EDE8;
+    --gray: #1A1A22;
+    --gray2: #2C2C3A;
+    --dot-size: 3px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'Space Mono', monospace;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* ── CUSTOM CURSOR ── */
+  #cursor {
+    width: 12px; height: 12px;
+    background: var(--red);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%,-50%);
+    transition: transform 0.08s, width 0.2s, height 0.2s, background 0.2s;
+    mix-blend-mode: difference;
+  }
+  #cursor-ring {
+    width: 36px; height: 36px;
+    border: 1.5px solid var(--cyan);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%,-50%);
+    transition: transform 0.18s ease, width 0.25s, height 0.25s;
+    opacity: 0.7;
+  }
+
+  /* ── HALFTONE TEXTURE ── */
+  body::before {
+    content:'';
+    position: fixed; inset: 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 18px 18px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── NOISE OVERLAY ── */
+  body::after {
+    content:'';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.5;
+  }
+
+  section, header, footer { position: relative; z-index: 1; }
+
+  /* ── HERO ── */
+  header {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 6vw;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute; inset: 0;
+    background: 
+      radial-gradient(ellipse 60% 70% at 80% 50%, rgba(232,19,42,0.12) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 60% at 20% 80%, rgba(0,245,255,0.05) 0%, transparent 60%);
+  }
+
+  .hero-lines {
+    position: absolute; inset: 0;
+    background-image: 
+      linear-gradient(90deg, rgba(232,19,42,0.06) 1px, transparent 1px),
+      linear-gradient(0deg, rgba(232,19,42,0.04) 1px, transparent 1px);
+    background-size: 80px 80px;
+  }
+
+  .hero-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(120px, 22vw, 320px);
+    line-height: 0.85;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(232,19,42,0.15);
+    position: absolute;
+    right: -2vw;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    user-select: none;
+    letter-spacing: -0.02em;
+  }
+
+  .hero-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 24px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.3s forwards;
+  }
+
+  .hero-tag span {
+    display: inline-block;
+    width: 30px;
+    height: 1px;
+    background: var(--cyan);
+    vertical-align: middle;
+    margin-right: 12px;
+  }
+
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(64px, 11vw, 160px);
+    line-height: 0.9;
+    letter-spacing: -0.01em;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.5s forwards;
+  }
+
+  h1 .line2 {
+    color: var(--red);
+    display: block;
+  }
+
+  .hero-sub {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 300;
+    font-size: clamp(16px, 2.5vw, 24px);
+    color: rgba(240,237,232,0.55);
+    margin-top: 20px;
+    max-width: 480px;
+    line-height: 1.5;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.7s forwards;
+  }
+
+  .hero-cta {
+    margin-top: 48px;
+    display: flex; gap: 16px; flex-wrap: wrap;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.9s forwards;
+  }
+
+  .btn {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    letter-spacing: 0.15em;
+    padding: 14px 32px;
+    border: none;
+    cursor: none;
+    text-decoration: none;
+    display: inline-block;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .btn-primary {
+    background: var(--red);
+    color: #fff;
+    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+  }
+  .btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px var(--red-glow);
+  }
+  .btn-outline {
+    background: transparent;
+    color: var(--white);
+    border: 1px solid rgba(240,237,232,0.3);
+  }
+  .btn-outline:hover {
+    border-color: var(--cyan);
+    color: var(--cyan);
+    transform: translateY(-3px);
+  }
+
+  /* ── SCROLL INDICATOR ── */
+  .scroll-hint {
+    position: absolute;
+    bottom: 40px; left: 6vw;
+    display: flex; align-items: center; gap: 12px;
+    font-size: 10px; letter-spacing: 0.25em;
+    color: rgba(240,237,232,0.35);
+    animation: fadeIn 1s 1.5s both;
+  }
+  .scroll-line {
+    width: 1px; height: 48px;
+    background: linear-gradient(to bottom, transparent, var(--red));
+    animation: scrollPulse 2s infinite;
+  }
+
+  /* ── WORK SECTION ── */
+  #work {
+    padding: 120px 6vw;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+    margin-bottom: 80px;
+  }
+
+  .section-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    color: var(--red);
+    letter-spacing: 0.2em;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(40px, 7vw, 90px);
+    line-height: 1;
+    letter-spacing: 0.02em;
+  }
+
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, rgba(232,19,42,0.4), transparent);
+    margin-left: 20px;
+    align-self: center;
+  }
+
+  /* ── PROJECT CARDS ── */
+  .projects {
+    display: grid;
+    gap: 0;
+  }
+
+  .project {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 520px;
+    border: 1px solid rgba(240,237,232,0.06);
+    overflow: hidden;
+    position: relative;
+    transition: border-color 0.3s;
+  }
+
+  .project:hover {
+    border-color: rgba(232,19,42,0.3);
+  }
+
+  .project:nth-child(even) .project-visual { order: 2; }
+  .project:nth-child(even) .project-info  { order: 1; }
+
+  .project-visual {
+    position: relative;
+    overflow: hidden;
+    background: var(--gray);
+  }
+
+  .project-visual::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.6));
+    pointer-events: none;
+  }
+
+  /* Video stills mosaic */
+  .still-grid {
+    display: grid;
+    width: 100%; height: 100%;
+    position: relative;
+  }
+
+  .still-grid.spiderverse {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+
+  .still-grid.cinemark {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+  }
+
+  .still {
+    overflow: hidden;
+    position: relative;
+  }
+
+  .still img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+    filter: saturate(1.1) contrast(1.05);
+  }
+
+  .project:hover .still img {
+    transform: scale(1.06);
+  }
+
+  .still.featured {
+    grid-column: span 2;
+  }
+
+  /* color overlays per project */
+  .spiderverse .still:nth-child(1)::before {
+    content:''; position:absolute; inset:0;
+    background: rgba(232,19,42,0.15); z-index:1; mix-blend-mode: multiply;
+  }
+  .cinemark .still:nth-child(1)::before {
+    content:''; position:absolute; inset:0;
+    background: rgba(232,19,42,0.1); z-index:1;
+  }
+
+  .project-badge {
+    position: absolute;
+    top: 20px; left: 20px;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    background: var(--red);
+    color: white;
+    padding: 5px 10px;
+    z-index: 10;
+    clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%);
+  }
+
+  .project-badge.blue {
+    background: var(--cyan);
+    color: var(--black);
+  }
+
+  /* Play button overlay */
+  .play-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .project:hover .play-overlay {
+    opacity: 1;
+  }
+
+  .play-btn {
+    width: 64px; height: 64px;
+    border: 2px solid rgba(255,255,255,0.8);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(8px);
+    background: rgba(0,0,0,0.4);
+    transition: transform 0.2s, background 0.2s;
+  }
+  .play-btn svg { margin-left: 4px; }
+  .play-btn:hover { transform: scale(1.1); background: var(--red); }
+
+  /* ── PROJECT INFO ── */
+  .project-info {
+    padding: 56px 48px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: var(--gray);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .project-info::before {
+    content: '';
+    position: absolute;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    top: -100px; right: -100px;
+    pointer-events: none;
+    opacity: 0.5;
+  }
+
+  .project:nth-child(1) .project-info::before {
+    background: radial-gradient(circle, rgba(232,19,42,0.12), transparent 70%);
+  }
+  .project:nth-child(2) .project-info::before {
+    background: radial-gradient(circle, rgba(0,245,255,0.08), transparent 70%);
+  }
+
+  .proj-category {
+    font-size: 10px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 16px;
+  }
+
+  .proj-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(36px, 4vw, 56px);
+    line-height: 0.95;
+    letter-spacing: 0.02em;
+    margin-bottom: 24px;
+  }
+
+  .proj-desc {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 300;
+    font-size: 16px;
+    line-height: 1.7;
+    color: rgba(240,237,232,0.65);
+    margin-bottom: 32px;
+    max-width: 380px;
+  }
+
+  .tech-stack {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-bottom: 40px;
+  }
+
+  .tech-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    border: 1px solid rgba(240,237,232,0.15);
+    color: rgba(240,237,232,0.6);
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .project:hover .tech-tag {
+    border-color: rgba(232,19,42,0.4);
+    color: rgba(240,237,232,0.85);
+  }
+
+  .proj-meta {
+    display: flex; gap: 32px;
+    padding-top: 32px;
+    border-top: 1px solid rgba(240,237,232,0.08);
+  }
+
+  .meta-item { display: flex; flex-direction: column; gap: 4px; }
+  .meta-label {
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(240,237,232,0.35);
+  }
+  .meta-val {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--white);
+  }
+
+  /* ── ABOUT STRIP ── */
+  #about {
+    padding: 120px 6vw;
+    border-top: 1px solid rgba(240,237,232,0.06);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+
+  .about-left h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(40px, 6vw, 80px);
+    line-height: 0.95;
+    margin-bottom: 32px;
+  }
+
+  .about-left h2 em {
+    font-style: normal;
+    color: var(--red);
+  }
+
+  .about-text {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 300;
+    font-size: 18px;
+    line-height: 1.8;
+    color: rgba(240,237,232,0.6);
+    margin-bottom: 16px;
+  }
+
+  .about-right {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+  }
+
+  .skill-block {
+    background: var(--gray);
+    padding: 28px 24px;
+    border: 1px solid rgba(240,237,232,0.04);
+    transition: background 0.3s, border-color 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .skill-block:hover {
+    background: rgba(232,19,42,0.06);
+    border-color: rgba(232,19,42,0.2);
+  }
+
+  .skill-block::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 0; height: 2px;
+    background: var(--red);
+    transition: width 0.4s;
+  }
+  .skill-block:hover::after { width: 100%; }
+
+  .skill-icon {
+    font-size: 22px;
+    margin-bottom: 12px;
+  }
+
+  .skill-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .skill-level {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: rgba(240,237,232,0.4);
+  }
+
+  /* ── CONTACT ── */
+  #contact {
+    padding: 100px 6vw;
+    text-align: center;
+    border-top: 1px solid rgba(240,237,232,0.06);
+    position: relative;
+    overflow: hidden;
+  }
+
+  #contact::before {
+    content: 'CONTACT';
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 25vw;
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(232,19,42,0.05);
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  .contact-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 9vw, 110px);
+    line-height: 0.9;
+    margin-bottom: 24px;
+  }
+
+  .contact-title span { color: var(--red); }
+
+  .contact-sub {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 300;
+    font-size: 18px;
+    color: rgba(240,237,232,0.5);
+    margin-bottom: 48px;
+  }
+
+  .contact-links {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .contact-link {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    color: rgba(240,237,232,0.6);
+    text-decoration: none;
+    padding: 14px 24px;
+    border: 1px solid rgba(240,237,232,0.12);
+    transition: all 0.25s;
+  }
+  .contact-link:hover {
+    color: var(--white);
+    border-color: var(--red);
+    background: rgba(232,19,42,0.07);
+    transform: translateY(-2px);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 24px 6vw;
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 1px solid rgba(240,237,232,0.06);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: rgba(240,237,232,0.25);
+  }
+
+  .footer-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--red);
+    display: inline-block;
+    margin: 0 8px;
+    animation: pulse 2s infinite;
+  }
+
+  /* ── GLITCH TEXT ── */
+  .glitch {
+    position: relative;
+    display: inline-block;
+  }
+  .glitch::before, .glitch::after {
+    content: attr(data-text);
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+  .glitch::before {
+    color: var(--cyan);
+    clip-path: polygon(0 30%, 100% 30%, 100% 50%, 0 50%);
+    animation: glitch1 4s infinite steps(1);
+    opacity: 0.6;
+  }
+  .glitch::after {
+    color: var(--red);
+    clip-path: polygon(0 60%, 100% 60%, 100% 75%, 0 75%);
+    animation: glitch2 4s infinite steps(1);
+    opacity: 0.4;
+  }
+
+  /* ── MARQUEE ── */
+  .marquee-wrap {
+    overflow: hidden;
+    border-top: 1px solid rgba(240,237,232,0.06);
+    border-bottom: 1px solid rgba(240,237,232,0.06);
+    padding: 18px 0;
+    background: rgba(232,19,42,0.04);
+  }
+  .marquee {
+    display: flex;
+    animation: marquee 18s linear infinite;
+    width: max-content;
+  }
+  .marquee-item {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.3em;
+    color: rgba(240,237,232,0.3);
+    padding: 0 40px;
+    white-space: nowrap;
+  }
+  .marquee-item.accent { color: var(--red); }
+
+  /* ── KEYFRAMES ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; }
+    50%      { opacity: 0.3; }
+  }
+  @keyframes scrollPulse {
+    0%,100% { opacity: 0.4; transform: scaleY(1); }
+    50%      { opacity: 1;   transform: scaleY(1.2); }
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+  @keyframes glitch1 {
+    0%,90%,100% { transform: none; }
+    91% { transform: translate(-3px, 0); }
+    93% { transform: translate(3px, 0); }
+    95% { transform: translate(-2px, 0); }
+  }
+  @keyframes glitch2 {
+    0%,85%,100% { transform: none; }
+    86% { transform: translate(4px, 0); }
+    88% { transform: translate(-4px, 0); }
+    90% { transform: translate(1px, 0); }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .project { grid-template-columns: 1fr; min-height: auto; }
+    .project:nth-child(even) .project-visual { order: 0; }
+    .project:nth-child(even) .project-info  { order: 1; }
+    .project-visual { min-height: 300px; }
+    .project-info { padding: 36px 28px; }
+    #about { grid-template-columns: 1fr; gap: 48px; }
+    .about-right { grid-template-columns: 1fr 1fr; }
+    .hero-number { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Custom cursor -->
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- ════════════════════════════════════════
+     HERO
+════════════════════════════════════════ -->
+<header>
+  <div class="hero-bg"></div>
+  <div class="hero-lines"></div>
+  <div class="hero-number">AW</div>
+
+  <div class="hero-tag"><span></span>Motion Design &amp; Video Editing</div>
+
+  <h1>
+    <span class="glitch" data-text="AGUSTÍN">AGUSTÍN</span>
+    <span class="line2">WINKLER</span>
+  </h1>
+
+  <p class="hero-sub">
+    Creador de contenido audiovisual. Especializado en animación de logos, motion graphics y edición publicitaria.
+  </p>
+
+  <div class="hero-cta">
+    <a href="#work" class="btn btn-primary">Ver proyectos</a>
+    <a href="#contact" class="btn btn-outline">Contacto</a>
+  </div>
+
+  <div class="scroll-hint">
+    <div class="scroll-line"></div>
+    SCROLL
+  </div>
+</header>
+
+<!-- Marquee strip -->
+<div class="marquee-wrap">
+  <div class="marquee">
+    <span class="marquee-item">After Effects</span>
+    <span class="marquee-item accent">▸</span>
+    <span class="marquee-item">DaVinci Resolve</span>
+    <span class="marquee-item accent">▸</span>
+    <span class="marquee-item">Motion Graphics</span>
+    <span class="marquee-item accent">▸</span>
+    <span class="marquee-item">Animación de Logos</span>
+    <span class="marquee-item accent">▸</span>
+    <span class="marquee-item">Publicidad</span>
+    <span class="marquee-item accent">▸</span>
+    <span class="marquee-item">Short-Form Content</span>
+    <span class="marquee-item accent">▸</span>
+    <span class="marquee-item">Adobe Photoshop</span>
+    <span class="marquee-item accent">▸</span>
+    <span class="marquee-item">Color Grading</span>
+    <span class="marquee-item accent">▸</span>
+    <!-- duplicate for seamless loop -->
+    <span class="marquee-item">After Effects</span>
+    <span class="marquee-item accent">▸</span>
+    <span class="marquee-item">DaVinci Resolve</span>
+    <span class="marquee-item accent">▸</span>
+    <span class="marquee-item">Motion Graphics</span>
+    <span class="marquee-item accent">▸</span>
+    <span class="marquee-item">Animación de Logos</span>
+    <span class="marquee-item accent">▸</span>
+    <span class="marquee-item">Publicidad</span>
+    <span class="marquee-item accent">▸</span>
+    <span class="marquee-item">Short-Form Content</span>
+    <span class="marquee-item accent">▸</span>
+    <span class="marquee-item">Adobe Photoshop</span>
+    <span class="marquee-item accent">▸</span>
+    <span class="marquee-item">Color Grading</span>
+    <span class="marquee-item accent">▸</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     WORK
+════════════════════════════════════════ -->
+<section id="work">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <h2 class="section-title">PROYECTOS</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="projects">
+
+    <!-- ── PROJECT 1: SPIDERVERSE LOGO ── -->
+    <article class="project">
+      <div class="project-visual">
+        <span class="project-badge">Motion Design</span>
+        <div class="still-grid spiderverse">
+
+          <!-- Frame 1: Extreme close-up dragon red -->
+          <div class="still featured" style="height:280px">
+            <img
+              src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='280'%3E%3Crect fill='%23080408'/%3E%3Ccircle cx='400' cy='140' r='180' fill='%23E8132A' opacity='.9'/%3E%3Ccircle cx='400' cy='140' r='120' fill='%23050507'/%3E%3Ccircle cx='380' cy='130' r='55' fill='%230033CC'/%3E%3Ccircle cx='370' cy='130' r='30' fill='%2300F5FF' opacity='.7'/%3E%3Cline x1='370' y1='130' x2='480' y2='110' stroke='%2300FF00' stroke-width='4'/%3E%3Ccircle cx='370' cy='130' r='8' fill='%23FFE600'/%3E%3C/svg%3E"
+              alt="Logo animation frame 1 - Spider-verse style close-up"
+              onerror="this.style.background='#1a0a0e'; this.src=''"
+            >
+          </div>
+
+          <!-- Frame 2: Full dragon logo reveal -->
+          <div class="still" style="height:220px">
+            <img
+              src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='220'%3E%3Crect fill='%23050507'/%3E%3Cellipse cx='200' cy='120' rx='130' ry='110' fill='none' stroke='%23E8132A' stroke-width='3'/%3E%3Cpath d='M200 30 L230 80 L280 90 L250 130 L260 180 L200 155 L140 180 L150 130 L120 90 L170 80 Z' fill='%23E8132A'/%3E%3Ccircle cx='200' cy='120' r='30' fill='%23050507'/%3E%3C/svg%3E"
+              alt="Logo animation frame 2"
+              onerror="this.style.background='#1a0a0e'"
+            >
+          </div>
+
+          <!-- Frame 3: Mid scale glitch -->
+          <div class="still" style="height:220px">
+            <img
+              src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='220'%3E%3Crect fill='%23080508'/%3E%3Crect x='80' y='100' width='240' height='20' fill='%2300F5FF' opacity='.5'/%3E%3Crect x='60' y='130' width='280' height='15' fill='%23E8132A' opacity='.6'/%3E%3Crect x='100' y='155' width='200' height='10' fill='%2300FF00' opacity='.4'/%3E%3C/svg%3E"
+              alt="Logo animation frame 3 - glitch"
+              onerror="this.style.background='#080508'"
+            >
+          </div>
+
+        </div>
+        <div class="play-overlay">
+          <div class="play-btn">
+            <svg width="18" height="20" viewBox="0 0 18 20" fill="white">
+              <path d="M1 1L17 10L1 19V1Z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="project-info">
+        <p class="proj-category">Animación de Logo / Motion Graphics</p>
+        <h3 class="proj-title">DRAGON LOGO<br>SPIDER-VERSE STYLE</h3>
+        <p class="proj-desc">
+          Animación de logo inspirada en la estética visual de <em>Spider-Man: Into the Spider-Verse</em>. 
+          Incorpora efectos de glitch, partículas RGB disociadas, zoom dramático, y transiciones 
+          de halftone cómic que dan vida al dragón en 8 segundos de puro impacto visual.
+        </p>
+        <div class="tech-stack">
+          <span class="tech-tag">After Effects</span>
+          <span class="tech-tag">Motion Graphics</span>
+          <span class="tech-tag">Glitch FX</span>
+          <span class="tech-tag">Color Design</span>
+          <span class="tech-tag">Partículas RGB</span>
+        </div>
+        <div class="proj-meta">
+          <div class="meta-item">
+            <span class="meta-label">Duración</span>
+            <span class="meta-val">8 seg</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Tipo</span>
+            <span class="meta-val">Logo Sting</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Año</span>
+            <span class="meta-val">2025</span>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- ── PROJECT 2: CINEMARK ── -->
+    <article class="project">
+      <div class="project-info">
+        <p class="proj-category" style="color:var(--cyan)">Publicidad / Commercial Edit</p>
+        <h3 class="proj-title">CINEMARK<br>× COCA-COLA</h3>
+        <p class="proj-desc">
+          Spot publicitario de 21 segundos para Cinemark Argentina, producido para la promoción 
+          del vaso coleccionable Coca-Cola edición Argentina. Composición con transiciones 
+          tipográficas impactantes, product shots con fondo dinámico y ritmo cinematográfico.
+        </p>
+        <div class="tech-stack">
+          <span class="tech-tag">DaVinci Resolve</span>
+          <span class="tech-tag">After Effects</span>
+          <span class="tech-tag">Tipografía</span>
+          <span class="tech-tag">Product Shoot</span>
+          <span class="tech-tag">Color Grading</span>
+        </div>
+        <div class="proj-meta">
+          <div class="meta-item">
+            <span class="meta-label">Duración</span>
+            <span class="meta-val">21 seg</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Cliente</span>
+            <span class="meta-val">Cinemark</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Año</span>
+            <span class="meta-val">2025</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="project-visual">
+        <span class="project-badge blue">Publicidad</span>
+        <div class="still-grid cinemark">
+
+          <!-- Frame: Tipografía grande rojo -->
+          <div class="still" style="height:175px">
+            <img
+              src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='175'%3E%3Crect fill='%23CC1020'/%3E%3Crect x='0' y='0' width='400' height='175' fill='%23B50E1E' opacity='.5'/%3E%3Ctext x='30' y='80' font-family='Arial Black' font-size='36' fill='white'%3EPod%C3%A9s llevar%3C/text%3E%3Ctext x='30' y='130' font-family='Arial Black' font-size='48' fill='white' font-weight='900'%3Etu VASO%3C/text%3E%3C/svg%3E"
+              alt="Cinemark frame 1"
+              onerror="this.style.background='#CC1020'"
+            >
+          </div>
+
+          <!-- Frame: Plaza con vaso -->
+          <div class="still" style="height:175px">
+            <img
+              src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='175'%3E%3Crect fill='%2360A870'/%3E%3Cellipse cx='200' cy='175' rx='280' ry='80' fill='%23487A50'/%3E%3Ccircle cx='200' cy='70' r='50' fill='%23C0392B'/%3E%3Crect x='185' y='20' width='8' height='50' fill='%23333'/%3E%3Ctext x='120' y='165' font-family='Arial Black' font-size='38' fill='white'%3EA LA PLAZA%3C/text%3E%3C/svg%3E"
+              alt="Cinemark frame 2"
+              onerror="this.style.background='#60A870'"
+            >
+          </div>
+
+          <!-- Frame: Oficina con vaso -->
+          <div class="still" style="height:175px">
+            <img
+              src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='175'%3E%3Crect fill='%23D0C8B8'/%3E%3Crect x='0' y='80' width='400' height='95' fill='%23A89880'/%3E%3Ccircle cx='200' cy='80' r='45' fill='%23C0392B'/%3E%3Crect x='187' y='35' width='7' height='45' fill='%23333'/%3E%3Ctext x='20' y='50' font-family='Arial Black' font-size='30' fill='%23C0392B'%3EA LA OFICINA%3C/text%3E%3C/svg%3E"
+              alt="Cinemark frame 3"
+              onerror="this.style.background='#D0C8B8'"
+            >
+          </div>
+
+          <!-- Frame: Cinema con vaso y popcorn -->
+          <div class="still featured" style="height:175px">
+            <img
+              src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='175'%3E%3Crect fill='%230A0508'/%3E%3Crect x='0' y='90' width='800' height='85' fill='%23300020'/%3E%3Ccircle cx='400' cy='75' r='55' fill='%23C0392B'/%3E%3Crect x='387' y='20' width='8' height='55' fill='%23333'/%3E%3Ccircle cx='250' cy='130' r='10' fill='%23F5E642'/%3E%3Ccircle cx='270' cy='120' r='8' fill='%23F5E642'/%3E%3Ccircle cx='290' cy='135' r='9' fill='%23F5E642'/%3E%3Ctext x='30' y='60' font-family='Arial Black' font-size='32' fill='white'%3EES CUANDO%3C/text%3E%3Ctext x='500' y='60' font-family='Arial Black' font-size='32' fill='white'%3EVUELVE A%3C/text%3E%3C/svg%3E"
+              alt="Cinemark frame 4"
+              onerror="this.style.background='#0A0508'"
+            >
+          </div>
+
+        </div>
+        <div class="play-overlay">
+          <div class="play-btn">
+            <svg width="18" height="20" viewBox="0 0 18 20" fill="white">
+              <path d="M1 1L17 10L1 19V1Z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     ABOUT
+════════════════════════════════════════ -->
+<section id="about">
+  <div class="about-left">
+    <h2>SOBRE<br><em>MÍ</em></h2>
+    <p class="about-text">
+      Soy Agustín Winkler, estudiante de Ingeniería en Electrónica en la FIUBA (UBA) y 
+      apasionado del diseño audiovisual. Mi base técnica me da una ventaja para entender 
+      herramientas digitales a fondo y usarlas de forma creativa.
+    </p>
+    <p class="about-text">
+      Combino habilidades en motion graphics, edición de video y programación para crear 
+      contenido que comunica de manera efectiva y visualmente impactante.
+    </p>
+  </div>
+  <div class="about-right">
+    <div class="skill-block">
+      <div class="skill-icon">🎬</div>
+      <div class="skill-name">After Effects</div>
+      <div class="skill-level">Nivel Intermedio</div>
+    </div>
+    <div class="skill-block">
+      <div class="skill-icon">🎨</div>
+      <div class="skill-name">DaVinci Resolve</div>
+      <div class="skill-level">Nivel Intermedio</div>
+    </div>
+    <div class="skill-block">
+      <div class="skill-icon">🖼️</div>
+      <div class="skill-name">Photoshop</div>
+      <div class="skill-level">Nivel Básico</div>
+    </div>
+    <div class="skill-block">
+      <div class="skill-icon">🐍</div>
+      <div class="skill-name">Python / C++</div>
+      <div class="skill-level">Nivel Junior</div>
+    </div>
+    <div class="skill-block">
+      <div class="skill-icon">🌐</div>
+      <div class="skill-name">HTML / CSS</div>
+      <div class="skill-level">Nivel Junior</div>
+    </div>
+    <div class="skill-block">
+      <div class="skill-icon">⚡</div>
+      <div class="skill-name">Ingeniería FIUBA</div>
+      <div class="skill-level">En curso — 2026</div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     CONTACT
+════════════════════════════════════════ -->
+<section id="contact">
+  <h2 class="contact-title">TRABAJEMOS<br><span>JUNTOS</span></h2>
+  <p class="contact-sub">¿Tenés un proyecto? Me interesa escucharte.</p>
+  <div class="contact-links">
+    <a href="mailto:agustinwinkler8@gmail.com" class="contact-link">
+      <svg width="14" height="11" viewBox="0 0 14 11" fill="none">
+        <rect x="0.5" y="0.5" width="13" height="10" rx="0.5" stroke="currentColor"/>
+        <path d="M0.5 1L7 6.5L13.5 1" stroke="currentColor"/>
+      </svg>
+      agustinwinkler8@gmail.com
+    </a>
+    <a href="https://www.linkedin.com/in/agustin-winkler" target="_blank" class="contact-link">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+        <rect x="0.5" y="0.5" width="12" height="12" rx="1.5" stroke="currentColor"/>
+        <rect x="2" y="5" width="2" height="6" fill="currentColor"/>
+        <circle cx="3" cy="3" r="1" fill="currentColor"/>
+        <path d="M5.5 5H7.5V6C7.5 6 8 5 9.5 5C11 5 11 6.5 11 8V11H9V8C9 7.2 8.5 7 8 7C7.2 7 7.5 7.8 7.5 8V11H5.5V5Z" fill="currentColor"/>
+      </svg>
+      linkedin.com/in/agustin-winkler
+    </a>
+    <a href="tel:+541155875234" class="contact-link">
+      <svg width="12" height="14" viewBox="0 0 12 14" fill="none">
+        <path d="M2 1H4L5 4L3.5 5C4.5 7.5 6.5 9.5 9 10.5L10 9L13 10V12C13 13 12 14 11 14C5 14 0 9 0 3C0 2 1 1 2 1Z" fill="currentColor"/>
+      </svg>
+      11 5587-5234
+    </a>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════ -->
+<footer>
+  <span>© 2025 AGUSTÍN WINKLER</span>
+  <span>PORTFOLIO<span class="footer-dot"></span>MOTION DESIGN</span>
+  <span>BUENOS AIRES, AR</span>
+</footer>
+
+<script>
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursor-ring');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.left = mx + 'px';
+    cursor.style.top  = my + 'px';
+  });
+
+  function animRing() {
+    rx += (mx - rx) * 0.12;
+    ry += (my - ry) * 0.12;
+    ring.style.left = rx + 'px';
+    ring.style.top  = ry + 'px';
+    requestAnimationFrame(animRing);
+  }
+  animRing();
+
+  document.querySelectorAll('a, button, .project').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      cursor.style.width = '20px';
+      cursor.style.height = '20px';
+      ring.style.width = '54px';
+      ring.style.height = '54px';
+    });
+    el.addEventListener('mouseleave', () => {
+      cursor.style.width = '12px';
+      cursor.style.height = '12px';
+      ring.style.width = '36px';
+      ring.style.height = '36px';
+    });
+  });
+
+  // Smooth scroll
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      document.querySelector(a.getAttribute('href'))
+        ?.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  // Scroll reveal
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.project, .skill-block, .section-header').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(40px)';
+    el.style.transition = 'opacity 0.7s ease, transform 0.7s ease';
+    obs.observe(el);
+  });
+</script>
+</body>
+</html>
